@@ -84,6 +84,8 @@ void AAFPS_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AAFPS_Character::FlyForward(float Val)
 {
+	LastForwardInput = Val;
+
 	if (Controller && Val != 0.f)
 	{
 		const FRotator Rotation = FRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -94,6 +96,8 @@ void AAFPS_Character::FlyForward(float Val)
 
 void AAFPS_Character::FlyRight(float Val)
 {
+	LastRightInput = Val;
+
 	if (Controller && Val != 0.f)
 	{
 		const FRotator Rotation = FRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -104,6 +108,8 @@ void AAFPS_Character::FlyRight(float Val)
 
 void AAFPS_Character::FlyUp(float Val)
 {
+	LastUpInput = Val;
+
 	if (Val != 0.f)
 	{
 		AddMovementInput(GetActorUpVector(), Val);
@@ -143,4 +149,12 @@ void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
 	WeaponInHands->SetActorRelativeTransform(FTransform::Identity);
 	WeaponInHands->GetMesh()->SetCastShadow(false);
 	WeaponInHands->OnAttach(this);
+}
+
+void AAFPS_Character::PlayFireAnimMontage()
+{
+	if (auto AnimInstance = Mesh1PComp->GetAnimInstance())
+	{
+		AnimInstance->Montage_Play(FireAnimMontage);
+	}
 }

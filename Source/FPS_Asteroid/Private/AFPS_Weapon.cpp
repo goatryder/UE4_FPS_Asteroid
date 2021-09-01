@@ -4,6 +4,8 @@
 #include "AFPS_Weapon.h"
 #include "Engine/CollisionProfile.h"
 
+#include "AFPS_Character.h"
+
 // Sets default values
 AAFPS_Weapon::AAFPS_Weapon()
 {
@@ -60,6 +62,11 @@ void AAFPS_Weapon::Tick(float DeltaTime)
 void AAFPS_Weapon::StartFire()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Magenta, "StartFire()");
+
+	if (CanFire())
+	{
+		StartFire_Internal();
+	}
 }
 
 void AAFPS_Weapon::StopFire()
@@ -67,22 +74,25 @@ void AAFPS_Weapon::StopFire()
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Magenta, "StopFire()");
 }
 
-void AAFPS_Weapon::OnAttach(AActor* ActorOwner)
+void AAFPS_Weapon::OnAttach(AAFPS_Character* ActorOwner)
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Magenta, "OnAttach()");
 
-	AttachedTo = ActorOwner;
+	CharacterAttachedTo = ActorOwner;
 	SetOwner(ActorOwner);
 }
 
 bool AAFPS_Weapon::CanFire()
 {
-	return false;
+	return EnergyLevel >= EnergyDrainPerShot;
 }
 
 void AAFPS_Weapon::StartFire_Internal()
 {
-
+	if (CharacterAttachedTo)
+	{
+		CharacterAttachedTo->PlayFireAnimMontage();
+	}
 }
 
 void AAFPS_Weapon::FireLoop()

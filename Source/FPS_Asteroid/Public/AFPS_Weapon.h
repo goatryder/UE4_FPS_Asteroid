@@ -10,6 +10,8 @@ class USkeletalMeshComponent;
 class UParticleSystem;
 class USoundBase;
 
+class AAFPSCharacter;
+
 //=============================================================================
 /**
  * This is not exactly base class for weapons
@@ -34,9 +36,12 @@ class FPS_ASTEROID_API AAFPS_Weapon : public AActor
 	// default weapon line trace params
 	FCollisionQueryParams ShotTraceQueryParams;
 
-	/** Actor who has this weapon attached to itself */
+	/** AFPSChracter who has this weapon attached to itself */
 	UPROPERTY()
-	AActor* AttachedTo;
+	AAFPS_Character* CharacterAttachedTo;
+
+	// cache last hit result to allow PlayEffects function receive hit info
+	FHitResult LastHitResult;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -55,7 +60,7 @@ public:
 
 	/** should be called when attached to character */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void OnAttach(AActor* ActorOwner);
+	void OnAttach(AAFPS_Character* CharacterOwner);
 
 protected:
 	// Called when the game starts or when spawned
@@ -175,9 +180,9 @@ protected:
 	void PlayEnergyRestoredEffects();
 
 public:
-	/** get actor who has this weapon attached to itself */
+	/** get character who has this weapon attached to itself */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	FORCEINLINE AActor* GetAttachedToActor() { return AttachedTo; }
+	FORCEINLINE AAFPS_Character* GetCharacterAttachedTo() { return CharacterAttachedTo; }
 
 	/** get weapon skeletal mesh */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")

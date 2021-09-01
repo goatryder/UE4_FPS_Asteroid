@@ -7,6 +7,7 @@
 #include "AFPS_Character.generated.h"
 
 class UCameraComponent;
+class UAnimMontage;
 class AAFPS_Weapon;
 
 UCLASS()
@@ -30,9 +31,16 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
 	TSubclassOf<AAFPS_Weapon> DefaultWeaponClass;
 
+	/** weapon shooting animation */
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+	UAnimMontage* FireAnimMontage;
+
 	/** character current weapon */
 	UPROPERTY()
 	AAFPS_Weapon* WeaponInHands;
+
+	/** Caching inputs values for use in anim instance */
+	float LastForwardInput, LastRightInput, LastUpInput;
 
 public:
 	// Sets default values for this character's properties
@@ -45,6 +53,10 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
 	void SpawnWeaponAttached(bool bDestroyOldWeapon = false);
+
+	/** Play Weapon shooting anim monatge */
+	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
+	void PlayFireAnimMontage();
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,16 +97,25 @@ public:
 	void OnStopFire();
 
 	/** Get first person mesh */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Character)
 	FORCEINLINE USkeletalMeshComponent* GetMesh1P() { return Mesh1PComp; }
 
 	/** Get character current weapon */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
 	FORCEINLINE AAFPS_Weapon* GetWeaponInHands() { return WeaponInHands; }
 
 	/** Get character sk mesh hand socket where weapon will be attached */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
 	FORCEINLINE FName GetWeaponSocketName() { return WeaponSocketName; }
+
+	/** Get Last Forward Input value */
+	FORCEINLINE float GetLastForwardInput() { return LastForwardInput; }
+
+	/** Get Last Right Input value */
+	FORCEINLINE float GetLastRightInput() { return LastRightInput; }
+
+	/** Get Last Up Input value */
+	FORCEINLINE float GetLastUpInput() { return LastUpInput; }
 
 private:
 	FORCEINLINE void DrawDebug();
