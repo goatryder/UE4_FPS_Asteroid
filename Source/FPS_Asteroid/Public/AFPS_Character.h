@@ -10,6 +10,50 @@ class UCameraComponent;
 class UAnimMontage;
 class AAFPS_Weapon;
 
+USTRUCT(BlueprintType)
+struct FMeshRotationLag
+{
+	GENERATED_BODY()
+
+	// max absolute pitch degree of mesh rotation
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0.0f, ClampMax = 20.0f))
+	float MaxPitchLag = 9.f;
+
+	// max absolute yaw degree of mesh rotation
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0.0f, ClampMax = 20.0f))
+	float MaxYawLag = 15.f;
+
+	// Lag speed, degree per second
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 0.01f, ClampMax = 4.0f))
+	float LagSpeed = 0.6f;
+
+	// store mesh to apply lag rotation on
+	UPROPERTY()
+	USkeletalMeshComponent* Mesh;
+
+	// default mesh relative pitch
+	float InitialPitch;
+	// default mesh relative yaw
+	float InitialYaw;
+
+	// current yaw rotation target
+	float YawTo;
+	// current pitch rotation target
+	float PitchTo;
+	
+	float LastMouseInput_Pitch;
+	float LastMouseInput_Yaw;
+
+	// set Mesh to apply rotation, save initial pitch and yaw values
+	void Initialize(USkeletalMeshComponent* MeshToRotate);
+	
+	// handle mouse Pitch input to apply mesh rotation lag
+	void OnUpdateInputPitch(float InputPitch);
+
+	// handle mouse Yaw input to apply mesh rotation lag
+	void OnUpdateInputYaw(float InputYaw);
+};
+
 UCLASS()
 class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 {
@@ -34,6 +78,14 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	/** weapon shooting animation */
 	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
 	UAnimMontage* FireAnimMontage;
+
+	/** enable/disable mesh rotation lag feature */
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+	bool bEnableMeshRotationLag;
+
+	/** mesh rotation lag parameters*/
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly, meta = (EditCondition = "bEnableMeshRotationLag"))
+	FMeshRotationLag MeshLagParams;
 
 	/** character current weapon */
 	UPROPERTY()
@@ -89,6 +141,20 @@ public:
 	* @param Val Movment input to apply
 	*/
 	void FlyUp(float Val);
+
+	/**
+	* mouse input pitch
+	*
+	* @param PitchInput value to apply
+	*/
+	void LookUpInput(float PitchInput);
+
+	/**
+	* mouse input yaw
+	*
+	* @param YawInput value to apply
+	*/
+	void TurnInput(float YawInput);
 
 	/** player pressed fire action */
 	void OnStartFire();

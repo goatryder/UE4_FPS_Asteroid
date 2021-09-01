@@ -9,6 +9,7 @@
 
 #include "AFPS_Weapon.h"
 
+
 AAFPS_Character::AAFPS_Character()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -47,6 +48,7 @@ AAFPS_Character::AAFPS_Character()
 
 	WeaponSocketName = "GripPoint";
 	DefaultWeaponClass = AAFPS_Weapon::StaticClass();
+	bEnableMeshRotationLag = true;
 }
 
 void AAFPS_Character::BeginPlay()
@@ -58,6 +60,10 @@ void AAFPS_Character::BeginPlay()
 
 	// spawn weapon
 	SpawnWeaponAttached();
+
+	// initialize MeshRotationLag info
+	if (bEnableMeshRotationLag)
+		MeshLagParams.Initialize(Mesh1PComp);
 }
 
 void AAFPS_Character::Tick(float DeltaTime)
@@ -75,8 +81,8 @@ void AAFPS_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis("FlyForward", this, &AAFPS_Character::FlyForward);
 	PlayerInputComponent->BindAxis("FlyRight", this, &AAFPS_Character::FlyRight);
 	PlayerInputComponent->BindAxis("FlyUp", this, &AAFPS_Character::FlyUp);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AAFPS_Character::TurnInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &AAFPS_Character::LookUpInput);
 	
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AAFPS_Character::OnStartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AAFPS_Character::OnStopFire);
@@ -116,6 +122,22 @@ void AAFPS_Character::FlyUp(float Val)
 	}
 }
 
+void AAFPS_Character::LookUpInput(float PitchInput)
+{
+	APawn::AddControllerPitchInput(PitchInput);
+
+	if (bEnableMeshRotationLag)
+		MeshLagParams.OnUpdateInputPitch(PitchInput);
+}
+
+void AAFPS_Character::TurnInput(float YawInput)
+{
+	APawn::AddControllerYawInput(YawInput);
+
+	if (bEnableMeshRotationLag)
+		MeshLagParams.OnUpdateInputYaw(YawInput);
+}
+
 void AAFPS_Character::OnStartFire()
 {
 	if (WeaponInHands)
@@ -134,7 +156,7 @@ void AAFPS_Character::OnStopFire()
 
 FORCEINLINE void AAFPS_Character::DrawDebug()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MovementMode: " + GetCharacterMovement()->GetMovementName());
+	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
 }
 
 void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
@@ -156,5 +178,76 @@ void AAFPS_Character::PlayFireAnimMontage()
 	if (auto AnimInstance = Mesh1PComp->GetAnimInstance())
 	{
 		AnimInstance->Montage_Play(FireAnimMontage);
+	}
+}
+
+void FMeshRotationLag::Initialize(USkeletalMeshComponent* MeshToRotate)
+{
+	if (MeshToRotate)
+	{
+		Mesh = MeshToRotate;
+		FRotator InitialMeshRotation = MeshToRotate->GetRelativeRotation();
+		InitialPitch = InitialMeshRotation.Pitch; 
+		InitialYaw = InitialMeshRotation.Yaw; 
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FMeshRotationLag::Initialize(USkeletalMeshComponent*) Mesh in nullptr!!!"));
+	}
+}
+
+void FMeshRotationLag::OnUpdateInputPitch(float InputPitch)
+{
+	if (Mesh)
+	{
+		if (InputPitch > 0.f)
+		{
+			PitchTo = InitialPitch - MaxPitchLag;
+		}
+		else if (InputPitch < 0.f)
+		{
+			PitchTo = InitialPitch + MaxPitchLag;
+		}
+		else // == 0.f
+		{
+			PitchTo = InitialPitch;
+		}
+
+		if (UWorld* World = Mesh->GetWorld())
+		{
+			float DeltaSeconds = World->GetDeltaSeconds();
+
+			FRotator Rotation = Mesh->GetRelativeRotation();
+			Rotation.Pitch = FMath::FInterpTo(Rotation.Pitch, PitchTo, DeltaSeconds, LagSpeed);
+			Mesh->SetRelativeRotation(Rotation);
+		}
+	}
+}
+
+void FMeshRotationLag::OnUpdateInputYaw(float InputYaw)
+{
+	if (Mesh)
+	{
+		if (InputYaw > 0.f)
+		{
+			YawTo = InitialYaw + MaxYawLag;
+		}
+		else if (InputYaw < 0.f)
+		{
+			YawTo = InitialYaw - MaxYawLag;
+		}
+		else // == 0.f
+		{
+			YawTo = InitialYaw;
+		}
+
+		if (UWorld* World = Mesh->GetWorld())
+		{
+			float DeltaSeconds = World->GetDeltaSeconds();
+
+			FRotator Rotation = Mesh->GetRelativeRotation();
+			Rotation.Yaw = FMath::FInterpTo(Rotation.Yaw, YawTo, DeltaSeconds, LagSpeed);
+			Mesh->SetRelativeRotation(Rotation);
+		}
 	}
 }
