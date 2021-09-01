@@ -7,6 +7,7 @@
 #include "AFPS_Character.generated.h"
 
 class UCameraComponent;
+class AAFPS_Weapon;
 
 UCLASS()
 class FPS_ASTEROID_API AAFPS_Character : public ACharacter
@@ -21,9 +22,29 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1PComp;
 
+	/** character sk mesh hand socket where weapon will be attached */
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+	FName WeaponSocketName;
+
+	/** character default weapon type */
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+	TSubclassOf<AAFPS_Weapon> DefaultWeaponClass;
+
+	/** character current weapon */
+	UPROPERTY()
+	AAFPS_Weapon* WeaponInHands;
+
 public:
 	// Sets default values for this character's properties
 	AAFPS_Character();
+
+	/**
+	* spawn weapon from DefaultWeaponClass
+	*
+	* @param bDestroyOldWeapon true: has weapon -> destroy then spawn new. false: has weapon -> return;
+	*/
+	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
+	void SpawnWeaponAttached(bool bDestroyOldWeapon = false);
 
 protected:
 	// Called when the game starts or when spawned
@@ -57,7 +78,23 @@ public:
 	*/
 	void FlyUp(float Val);
 
+	/** player pressed fire action */
+	void OnStartFire();
+
+	/** player released fire action */
+	void OnStopFire();
+
+	/** Get first person mesh */
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE USkeletalMeshComponent* GetMesh1P() { return Mesh1PComp; }
+
+	/** Get character current weapon */
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE AAFPS_Weapon* GetWeaponInHands() { return WeaponInHands; }
+
+	/** Get character sk mesh hand socket where weapon will be attached */
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FName GetWeaponSocketName() { return WeaponSocketName; }
 
 private:
 	FORCEINLINE void DrawDebug();

@@ -7,8 +7,7 @@
 #include "Gameframework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 
-// todo: make input
-// todo: fly!!!
+#include "AFPS_Weapon.h"
 
 AAFPS_Character::AAFPS_Character()
 {
@@ -27,8 +26,7 @@ AAFPS_Character::AAFPS_Character()
 	// Create first person mesh
 	Mesh1PComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	Mesh1PComp->SetupAttachment(CameraComp);
-	Mesh1PComp->bCastDynamicShadow = false;
-	Mesh1PComp->CastShadow = false;
+	Mesh1PComp->SetCastShadow(false);
 	Mesh1PComp->SetRelativeRotation(FRotator(2.f, -15.0f, 5.0f));
 	Mesh1PComp->SetRelativeLocation(FVector(0, 0, -155.0f));
 
@@ -46,12 +44,20 @@ AAFPS_Character::AAFPS_Character()
 	{
 		Mesh1PComp->SetAnimInstanceClass(AnimFinder.Object->GeneratedClass);
 	}
+
+	WeaponSocketName = "GripPoint";
+	DefaultWeaponClass = AAFPS_Weapon::StaticClass();
 }
 
 void AAFPS_Character::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// change movement mode to fly
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+	// spawn weapon
+	SpawnWeaponAttached();
 }
 
 void AAFPS_Character::Tick(float DeltaTime)
@@ -71,6 +77,9 @@ void AAFPS_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAxis("FlyUp", this, &AAFPS_Character::FlyUp);
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AAFPS_Character::OnStartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AAFPS_Character::OnStopFire);
 }
 
 void AAFPS_Character::FlyForward(float Val)
@@ -101,7 +110,37 @@ void AAFPS_Character::FlyUp(float Val)
 	}
 }
 
+void AAFPS_Character::OnStartFire()
+{
+	if (WeaponInHands)
+	{
+		WeaponInHands->StartFire();
+	}
+}
+
+void AAFPS_Character::OnStopFire()
+{
+	if (WeaponInHands)
+	{
+		WeaponInHands->StopFire();
+	}
+}
+
 FORCEINLINE void AAFPS_Character::DrawDebug()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MovementMode: " + GetCharacterMovement()->GetMovementName());
+}
+
+void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
+{
+	if (bDestroyOldWeapon && WeaponInHands)
+	{
+		WeaponInHands->Destroy();
+	}
+
+	WeaponInHands = GetWorld()->SpawnActor<AAFPS_Weapon>(DefaultWeaponClass, GetActorLocation(), GetActorRotation());
+	WeaponInHands->AttachToComponent(Mesh1PComp, FAttachmentTransformRules::KeepRelativeTransform, WeaponInHands->GetAttachSocketName());
+	WeaponInHands->SetActorRelativeTransform(FTransform::Identity);
+	WeaponInHands->GetMesh()->SetCastShadow(false);
+	WeaponInHands->OnAttach(this);
 }
