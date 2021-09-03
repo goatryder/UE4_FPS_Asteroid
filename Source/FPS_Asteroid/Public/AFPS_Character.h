@@ -164,24 +164,24 @@ public:
 
 	/** Get first person mesh */
 	UFUNCTION(BlueprintCallable, Category = Character)
-	FORCEINLINE USkeletalMeshComponent* GetMesh1P() { return Mesh1PComp; }
+	FORCEINLINE USkeletalMeshComponent* GetMesh1P() const { return Mesh1PComp; }
 
 	/** Get character current weapon */
 	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
-	FORCEINLINE AAFPS_Weapon* GetWeaponInHands() { return WeaponInHands; }
+	FORCEINLINE AAFPS_Weapon* GetWeaponInHands() const { return WeaponInHands; }
 
 	/** Get character sk mesh hand socket where weapon will be attached */
 	UFUNCTION(BlueprintCallable, Category = "FPSCharacter")
-	FORCEINLINE FName GetWeaponSocketName() { return WeaponSocketName; }
+	FORCEINLINE FName GetWeaponSocketName() const { return WeaponSocketName; }
 
 	/** Get Last Forward Input value */
-	FORCEINLINE float GetLastForwardInput() { return LastForwardInput; }
+	FORCEINLINE float GetLastForwardInput() const { return LastForwardInput; }
 
 	/** Get Last Right Input value */
-	FORCEINLINE float GetLastRightInput() { return LastRightInput; }
+	FORCEINLINE float GetLastRightInput() const { return LastRightInput; }
 
 	/** Get Last Up Input value */
-	FORCEINLINE float GetLastUpInput() { return LastUpInput; }
+	FORCEINLINE float GetLastUpInput() const { return LastUpInput; }
 
 private:
 	FORCEINLINE void DrawDebug();

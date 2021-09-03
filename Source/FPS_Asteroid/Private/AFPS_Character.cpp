@@ -156,7 +156,7 @@ void AAFPS_Character::OnStopFire()
 
 FORCEINLINE void AAFPS_Character::DrawDebug()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
+	// if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
 }
 
 void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
