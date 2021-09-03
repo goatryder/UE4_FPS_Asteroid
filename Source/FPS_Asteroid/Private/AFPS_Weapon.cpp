@@ -35,8 +35,8 @@ AAFPS_Weapon::AAFPS_Weapon()
 	StartFireDelay = 0.5f;
 	FireRate = 0.1f;
 	EnergyLevel = 100.f;
-	EnergyRecoveryRate = 50.f;
-	EnergyDrainPerShot = 2.5f;
+	EnergyRecoveryRate = 50.f;  // 2 sec recovery
+	EnergyDrainPerShot = 5.f;   // 2 sec shooting
 
 	ShotLineTraceChanel = ECollisionChannel::ECC_Camera;
 
@@ -56,7 +56,7 @@ void AAFPS_Weapon::Tick(float DeltaTime)
 	CalculateEnergyLevel(DeltaTime);
 
 	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-		DrawDebug();
+		DrawDebug(DeltaTime);
 	#endif
 
 }
@@ -188,13 +188,16 @@ void AAFPS_Weapon::StopFire_Internal()
 
 void AAFPS_Weapon::CalculateEnergyLevel(float DeltaSeconds)
 {
-	float InterpSpeed = bIsFiring ? (1.f / FireRate) : EnergyRecoveryRate;
+	float InterpSpeed = bIsFiring ? (EnergyDrainPerShot / FireRate) : EnergyRecoveryRate;
+
 	CurrentEnergyLevel = FMath::FInterpConstantTo(CurrentEnergyLevel, EnergyLevelTarget, DeltaSeconds, InterpSpeed);
 
 	if (bEnergyWasDrained && CurrentEnergyLevel == EnergyLevel)
 	{
 		bEnergyWasDrained = false;
 		PlayEnergyRestoredEffects();  // effects
+
+		if (bWantsToFire) StartFire_Internal();  // run fire loop
 	}
 }
 
@@ -223,15 +226,38 @@ void AAFPS_Weapon::PlayEnergyRestoredEffects()
 	OnPlayEnergyRestoredEffects(); // Calling blueprint version
 }
 
-FORCEINLINE void AAFPS_Weapon::DrawDebug()
+FORCEINLINE void AAFPS_Weapon::DrawDebug(float DeltaSeconds)
 {
 	// draw debug weapon parameters
 	FVector DrawLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
+
+	// dbg shooting time msg
+	FString ShootTimeMsg;
+	{
+		static float ShootingTimer;
+		static float NotShootingTimer;
+		
+		if (bIsFiring)
+		{
+			ShootingTimer += DeltaSeconds;
+			NotShootingTimer = 0.f;
+			ShootTimeMsg = "\nShootingTime: " + FString::SanitizeFloat(ShootingTimer);
+		}
+		else
+		{
+			NotShootingTimer += DeltaSeconds;
+			ShootingTimer = 0.f;
+			ShootTimeMsg = "\nNotShootingTime: " + FString::SanitizeFloat(NotShootingTimer);
+		}
+	}
+
 	FString Msg = "bWantsToFire: " + FString(bWantsToFire ? "true" : "false") + 
 		"\nbEnergyWasDrained: " + FString(bEnergyWasDrained ? "true" : "false") +
 		"\nbIsFiring: " + FString((bIsFiring ? "true" : "false")) +
 		"\nEnergyCurrent: " + FString::SanitizeFloat(CurrentEnergyLevel) + 
-		"\nEnergyTarget:" + FString::SanitizeFloat(EnergyLevelTarget);
+		"\nEnergyTarget:" + FString::SanitizeFloat(EnergyLevelTarget) +
+		"\nEnergyInterpSpeed:" + FString::SanitizeFloat(bIsFiring ? (EnergyDrainPerShot / FireRate) : EnergyRecoveryRate)
+		+ ShootTimeMsg;
 
 	DrawDebugString(GetWorld(), DrawLocation, Msg, 0, FColor::Cyan, 0.f, true);
 

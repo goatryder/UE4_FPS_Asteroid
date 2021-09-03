@@ -26,7 +26,7 @@ class FPS_ASTEROID_API AAFPS_Weapon : public AActor
 	USkeletalMeshComponent* MeshComp;
 
 	// place where we can visualise some debug info
-	FORCEINLINE void DrawDebug();
+	FORCEINLINE void DrawDebug(float DeltaSeconds);
 
 	// default weapon line trace params
 	FCollisionQueryParams TraceQueryParams;
