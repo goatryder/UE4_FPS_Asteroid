@@ -20,6 +20,9 @@ AAFPS_Character::AAFPS_Character()
 	CameraComp->SetRelativeLocation(FVector(0, 0, BaseEyeHeight)); // Position the camera
 	CameraComp->bUsePawnControlRotation = true;
 
+	// custom camera lag without springarm
+	bEnableMeshRotationLag = true;
+
 	// allow fly
 	auto& NavAgentProps = GetCharacterMovement()->GetNavAgentPropertiesRef();
 	NavAgentProps.bCanFly = true;
@@ -31,7 +34,7 @@ AAFPS_Character::AAFPS_Character()
 	Mesh1PComp->SetRelativeRotation(FRotator(2.f, -15.0f, 5.0f));
 	Mesh1PComp->SetRelativeLocation(FVector(0, 0, -155.0f));
 
-	// find default mesh
+	// mesh find
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/FirstPerson/Character/Mesh/SK_Mannequin_Arms.SK_Mannequin_Arms"));
 	if (MeshFinder.Succeeded())
 	{
@@ -39,16 +42,22 @@ AAFPS_Character::AAFPS_Character()
 
 	}
 
-	// find anim bp
+	// mesh find anim bp
 	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimFinder(TEXT("/Game/Blueprints/ABP_Player.ABP_Player"));
 	if (MeshFinder.Succeeded())
 	{
 		Mesh1PComp->SetAnimInstanceClass(AnimFinder.Object->GeneratedClass);
 	}
 
+	// weapon defaults
 	WeaponSocketName = "GripPoint";
 	DefaultWeaponClass = AAFPS_Weapon::StaticClass();
-	bEnableMeshRotationLag = true;
+
+
+	// look point trace defauls;
+	LookLineTraceChannel = ECollisionChannel::ECC_Camera;
+	LookTraceQueryParams.AddIgnoredActor(this);
+
 }
 
 void AAFPS_Character::BeginPlay()
@@ -69,6 +78,8 @@ void AAFPS_Character::BeginPlay()
 void AAFPS_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	LookPointTrace();
 
 	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 		DrawDebug();
@@ -156,6 +167,7 @@ void AAFPS_Character::OnStopFire()
 
 FORCEINLINE void AAFPS_Character::DrawDebug()
 {
+	// debug camera lag
 	// if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
 }
 
@@ -171,6 +183,8 @@ void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
 	WeaponInHands->SetActorRelativeTransform(FTransform::Identity);
 	WeaponInHands->GetMesh()->SetCastShadow(false);
 	WeaponInHands->OnAttach(this);
+
+	LookTraceQueryParams.AddIgnoredActor(WeaponInHands);
 }
 
 void AAFPS_Character::PlayFireAnimMontage()

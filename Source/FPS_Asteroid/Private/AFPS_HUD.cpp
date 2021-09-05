@@ -18,7 +18,7 @@ void AAFPS_HUD::DrawHUD()
 		float CanvasCenterX, CanvasCenterY;
 		Canvas->GetCenter(CanvasCenterX, CanvasCenterY);
 		
-		Canvas->DrawIcon(CrosshairIcon, CanvasCenterX, CanvasCenterY, 1.f);
+		Canvas->DrawIcon(CrosshairIcon, CanvasCenterX - CrosshairIcon.UL * 0.5f, CanvasCenterY - CrosshairIcon.VL * 0.5f, 1.f);
 	}
 
 	Super::DrawHUD();

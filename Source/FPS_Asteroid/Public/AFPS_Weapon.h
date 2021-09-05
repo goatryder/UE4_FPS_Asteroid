@@ -8,6 +8,7 @@
 
 class USkeletalMeshComponent;
 class AAFPSCharacter;
+class UParticleSystemComponent;
 
 //=============================================================================
 /**
@@ -25,11 +26,15 @@ class FPS_ASTEROID_API AAFPS_Weapon : public AActor
 	UPROPERTY(Category = "Weapon", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* MeshComp;
 
+	/** Weapon beam effect on shooting beam emiter should has index 0 */
+	UPROPERTY(Category = "Weapon", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* BeamPSC;
+
 	// place where we can visualise some debug info
 	FORCEINLINE void DrawDebug(float DeltaSeconds);
 
-	// default weapon line trace params
-	FCollisionQueryParams TraceQueryParams;
+	// default weapon hit line trace params
+	FCollisionQueryParams HitTraceQueryParams;
 
 	/** AFPSChracter who has this weapon attached to itself */
 	UPROPERTY()
@@ -38,7 +43,7 @@ class FPS_ASTEROID_API AAFPS_Weapon : public AActor
 	// cache last hit result to allow PlayEffects function receive hit info
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	mutable FHitResult LastHit;
-	
+
 public:	
 	// Sets default values for this actor's properties
 	AAFPS_Weapon();
@@ -68,7 +73,7 @@ protected:
 	FName AttachSocketName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	TEnumAsByte<ECollisionChannel> ShotLineTraceChanel;
+	TEnumAsByte<ECollisionChannel> ShotLineTraceChannel;
 
 	/** Max weapon range to trace hit */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
@@ -147,7 +152,10 @@ private:
 	void StopFire_Internal();
 
 	/** Frame-per-frame Tick energy calculation, decreased when firing, increased when not firining */
-	void CalculateEnergyLevel(float DeltaSeconds);
+	FORCEINLINE void OnTickCalculateEnergyLevel(float DeltaSeconds);
+
+	/** OnTick BeamPSC handle beam source and target */
+	FORCEINLINE void OnTickBeamPSCHandle();
 
 protected:
 	//=============================================================================
@@ -159,6 +167,13 @@ protected:
 
 	/**  Play effects when weapon starts to fire (calls blueprint implemented) */
 	virtual void PlayStartFireEffects();
+
+	/** Play weapon effects when not shooting any more BLUEPRINT IMPLEMENTABLE */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Weapon")
+	void OnPlayEndFireEffects();
+
+	/** Play weapon effects when not shooting any more (calls blueprint implemented) */
+	virtual void PlayEndFireEffects();
 
 	/** Play weapon fire effects while shooting is looping BLUEPRINT IMPLEMENTABLE */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Weapon")
@@ -213,5 +228,4 @@ public:
 	/** get weapon last hit trace result */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	FORCEINLINE FHitResult& GetLastShotHitTraceResult() const { return LastHit; }
-
 };

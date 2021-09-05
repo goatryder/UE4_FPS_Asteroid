@@ -5,6 +5,7 @@
 #include "Engine/CollisionProfile.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include "AFPS_Character.h"
 
@@ -19,8 +20,11 @@ AAFPS_Weapon::AAFPS_Weapon()
 	MeshComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	RootComponent = MeshComp;
 
+	BeamPSC = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("BeamPSC"));
+	BeamPSC->bAutoActivate = false;
+
 	// find default mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/FirstPerson/FPWeapon/Mesh/SK_FPGun.SK_FPGun"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/LaserGun/FPWeapon/Mesh/SK_FPGun.SK_FPGun"));
 	if (MeshFinder.Succeeded())
 	{
 		MeshComp->SetSkeletalMesh(MeshFinder.Object);
@@ -38,22 +42,24 @@ AAFPS_Weapon::AAFPS_Weapon()
 	EnergyRecoveryRate = 50.f;  // 2 sec recovery
 	EnergyDrainPerShot = 5.f;   // 2 sec shooting
 
-	ShotLineTraceChanel = ECollisionChannel::ECC_Camera;
-
 	DamageType = UDamageType::StaticClass();
+	
+	ShotLineTraceChannel = ECollisionChannel::ECC_Camera;
+
+	HitTraceQueryParams.AddIgnoredActor(this);
+	HitTraceQueryParams.bTraceComplex = true;
 
 	CurrentEnergyLevel = EnergyLevel;
 	EnergyLevelTarget = EnergyLevel;
-	
-	TraceQueryParams.AddIgnoredActor(this);
-	TraceQueryParams.bTraceComplex = true;
 }
 
 void AAFPS_Weapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CalculateEnergyLevel(DeltaTime);
+	OnTickCalculateEnergyLevel(DeltaTime);
+
+	OnTickBeamPSCHandle();
 
 	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 		DrawDebug(DeltaTime);
@@ -85,7 +91,7 @@ void AAFPS_Weapon::OnAttach(AAFPS_Character* InCharacterOwner)
 		CharacterOwner = InCharacterOwner;
 		SetOwner(InCharacterOwner);
 
-		TraceQueryParams.AddIgnoredActor(InCharacterOwner);
+		HitTraceQueryParams.AddIgnoredActor(InCharacterOwner);
 	}
 }
 
@@ -109,11 +115,11 @@ void AAFPS_Weapon::StartFire_Internal()
 	}
 
 	LastTimeWhenFiringStarts = GetWorld()->GetTimeSeconds();
+	bIsFiring = true;
 
 	CharacterOwner->PlayFireAnimMontage();  // character fire anim
 	PlayStartFireEffects(); // effects
 
-	bIsFiring = true;
 	FireLoop();
 }
 
@@ -147,7 +153,7 @@ void AAFPS_Weapon::ShotLineTrace()
 
 	LastHit = FHitResult();  // flush old result
 
-	if (GetWorld()->LineTraceSingleByChannel(LastHit, EyeLocation, ShotEnd, ShotLineTraceChanel, TraceQueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(LastHit, EyeLocation, ShotEnd, ShotLineTraceChannel, HitTraceQueryParams))
 	{
 		AActor* HitActor = LastHit.GetActor();
 
@@ -184,9 +190,11 @@ void AAFPS_Weapon::StopFire_Internal()
 
 	ResetShotTimer(false); // stop shooting loop
 	bIsFiring = false;
+
+	PlayEndFireEffects(); // effects
 }
 
-void AAFPS_Weapon::CalculateEnergyLevel(float DeltaSeconds)
+FORCEINLINE void AAFPS_Weapon::OnTickCalculateEnergyLevel(float DeltaSeconds)
 {
 	float InterpSpeed = bIsFiring ? (EnergyDrainPerShot / FireRate) : EnergyRecoveryRate;
 
@@ -201,9 +209,57 @@ void AAFPS_Weapon::CalculateEnergyLevel(float DeltaSeconds)
 	}
 }
 
+FORCEINLINE void AAFPS_Weapon::OnTickBeamPSCHandle()
+{
+	if (BeamPSC)
+	{
+		FVector MuzzleLoc = GetMesh()->GetSocketLocation(MuzzleSocketName);
+		BeamPSC->SetBeamSourcePoint(0, MuzzleLoc, 0);
+		
+		FVector TargetLoc;
+		{
+			float BeamLength = LastHit.bBlockingHit ? LastHit.Distance : Range;
+			FVector ShotMuzzleDirection;
+
+			if (CharacterOwner)
+			{
+				ShotMuzzleDirection = (CharacterOwner->GetCharacterViewPoint() - MuzzleLoc);
+			}
+			else
+			{
+				ShotMuzzleDirection = (LastHit.TraceEnd - MuzzleLoc);
+			}
+
+			ShotMuzzleDirection.Normalize();
+			TargetLoc = MuzzleLoc + ShotMuzzleDirection * BeamLength;
+		}
+		BeamPSC->SetBeamTargetPoint(0, TargetLoc, 0);
+
+		// debug
+		// DrawDebugLine(GetWorld(), MuzzleLoc, TargetLoc, FColor::Yellow, false, 0.f, 0, 2.f);
+	}
+}
+
 void AAFPS_Weapon::PlayStartFireEffects()
 {
+	// beam particle
+	if (BeamPSC)
+	{
+		BeamPSC->Activate();
+	}
+
 	OnPlayStartFireEffects(); // Calling blueprint version
+}
+
+void AAFPS_Weapon::PlayEndFireEffects()
+{
+	// beam particle
+	if (BeamPSC)
+	{
+		BeamPSC->Deactivate();
+	}
+
+	OnPlayEndFireEffects(); // Calling blueprint version
 }
 
 void AAFPS_Weapon::PlayFireEffects()

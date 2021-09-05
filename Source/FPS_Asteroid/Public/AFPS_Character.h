@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../FPS_Asteroid.h"
 #include "AFPS_Character.generated.h"
 
 class UCameraComponent;
@@ -94,6 +95,17 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	/** Caching inputs values for use in anim instance */
 	float LastForwardInput, LastRightInput, LastUpInput;
 
+	// default look point trace params
+	FCollisionQueryParams LookTraceQueryParams;
+
+	// look point trace channel
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
+
+	// cache last view point trace result
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	mutable FHitResult LookTrace;
+
 public:
 	// Sets default values for this character's properties
 	AAFPS_Character();
@@ -183,6 +195,49 @@ public:
 	/** Get Last Up Input value */
 	FORCEINLINE float GetLastUpInput() const { return LastUpInput; }
 
+	/** get look point trace result */
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
+	FORCEINLINE FHitResult& GetLookTraceResult() const { return LookTrace; }
+
+	/** Get character veiw point, if trace fail -> get far max view point */
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = Character)
+	FORCEINLINE FVector GetCharacterViewPoint() const
+	{
+		return LookTrace.IsValidBlockingHit() ? LookTrace.Location : GetFarLookPoint();
+	}
+
 private:
 	FORCEINLINE void DrawDebug();
+
+	/** Get max allowed character look focus point
+	 * Returns eyes_location + eyes_direction * TRACE_DIST_MAX
+	 */
+	FORCEINLINE FVector GetFarLookPoint() const
+	{
+		FVector EyeLoc;
+		FRotator EyeRot;
+		GetActorEyesViewPoint(EyeLoc, EyeRot);
+
+		FVector LookPointMax = EyeLoc + EyeRot.Vector() * TRACE_DIST_MAX;
+		return LookPointMax;
+	}
+
+	/** Get max allowed character look focus line
+	*/
+	FORCEINLINE void GetLookTraceLine(FVector& OutLookPointStart, FVector& OutLookPointEnd) const
+	{
+		FRotator EyeRot;
+		GetActorEyesViewPoint(OutLookPointStart, EyeRot);
+		OutLookPointEnd = OutLookPointStart + EyeRot.Vector() * TRACE_DIST_MAX;
+	}
+
+	/** OnTick look point trace */
+	FORCEINLINE void LookPointTrace()
+	{
+		FVector TraceStart;
+		FVector TraceEnd;
+		GetLookTraceLine(TraceStart, TraceEnd);
+		GetWorld()->LineTraceSingleByChannel(LookTrace, TraceStart, TraceEnd, LookLineTraceChannel, LookTraceQueryParams);
+	}
+
 };
