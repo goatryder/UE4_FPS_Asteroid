@@ -5,12 +5,9 @@
 #include "Engine/CollisionProfile.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
-#include "Particles/ParticleSystemComponent.h"
-#include "Engine/SkeletalMeshSocket.h"
 
 #include "AFPS_Character.h"
 
-// todo: fix energy level target 
 
 AAFPS_Weapon::AAFPS_Weapon()
 {
@@ -23,9 +20,6 @@ AAFPS_Weapon::AAFPS_Weapon()
 	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	RootComponent = MeshComp;
-
-	BeamPSC = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("BeamPSC"));
-	BeamPSC->bAutoActivate = false;
 
 	// find default mesh
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/LaserGun/FPWeapon/Mesh/SK_FPGun.SK_FPGun"));
@@ -63,11 +57,12 @@ void AAFPS_Weapon::Tick(float DeltaTime)
 
 	OnTickCalculateEnergyLevel(DeltaTime);
 
-	OnTickBeamPSCHandle();
-
-	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	#if WITH_EDITOR
+	if (bDrawDebugWeapon)
+	{
 		DrawDebug(DeltaTime);
-	#endif
+	}
+	#endif // WITH_EDITOR
 
 }
 
@@ -213,60 +208,13 @@ FORCEINLINE void AAFPS_Weapon::OnTickCalculateEnergyLevel(float DeltaSeconds)
 	}
 }
 
-FORCEINLINE void AAFPS_Weapon::OnTickBeamPSCHandle()
-{
-	if (BeamPSC)
-	{
-		FVector MuzzleLoc = GetMesh()->GetSocketLocation(MuzzleSocketName);
-		BeamPSC->SetBeamSourcePoint(0, MuzzleLoc, 0);
-		
-		FVector TargetLoc;
-		{
-			//float BeamLength = LastHit.bBlockingHit ? LastHit.Distance : Range;
-			//FVector ShotMuzzleDirection;
-			//
-			//if (CharacterOwner)
-			//{
-			//	ShotMuzzleDirection = (CharacterOwner->GetCharacterViewPoint() - MuzzleLoc);
-			//}
-			//else
-			//{
-			//	ShotMuzzleDirection = (LastHit.TraceEnd - MuzzleLoc);
-			//}
-			//
-			//ShotMuzzleDirection.Normalize();
-			//TargetLoc = MuzzleLoc + ShotMuzzleDirection * BeamLength;
-
-			TargetLoc = CharacterOwner ? CharacterOwner->GetCharacterViewPoint() : LastHit.TraceEnd;
-		}
-
-		BeamPSC->SetBeamTargetPoint(0, TargetLoc, 0);
-
-		// debug
-		DrawDebugLine(GetWorld(), MuzzleLoc, TargetLoc, FColor::Yellow, false, 0.f, 1, 1);
-		DrawDebugString(GetWorld(), TargetLoc, FString::SanitizeFloat((TargetLoc - MuzzleLoc).Size() * 0.01f) + " m", 0, FColor::Cyan, 0.f, true);
-	}
-}
-
 void AAFPS_Weapon::PlayStartFireEffects()
 {
-	// beam particle
-	if (BeamPSC)
-	{
-		BeamPSC->Activate();
-	}
-
 	OnPlayStartFireEffects(); // Calling blueprint version
 }
 
 void AAFPS_Weapon::PlayEndFireEffects()
 {
-	// beam particle
-	if (BeamPSC)
-	{
-		BeamPSC->Deactivate();
-	}
-
 	OnPlayEndFireEffects(); // Calling blueprint version
 }
 

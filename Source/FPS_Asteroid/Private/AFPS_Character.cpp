@@ -84,9 +84,12 @@ void AAFPS_Character::Tick(float DeltaTime)
 
 	LookPointTrace();
 
-	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	#if WITH_EDITOR
+	if (bDrawDebugCharacter)
+	{
 		DrawDebug();
-	#endif
+	}
+	#endif  // WITH_EDITOR
 }
 
 void AAFPS_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

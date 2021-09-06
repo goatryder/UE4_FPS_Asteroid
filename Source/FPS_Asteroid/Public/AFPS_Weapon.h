@@ -8,7 +8,6 @@
 
 class USkeletalMeshComponent;
 class AAFPSCharacter;
-class UParticleSystemComponent;
 
 //=============================================================================
 /**
@@ -25,10 +24,6 @@ class FPS_ASTEROID_API AAFPS_Weapon : public AActor
 	/** Weapon mesh */
 	UPROPERTY(Category = "Weapon", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* MeshComp;
-
-	/** Weapon beam effect on shooting beam emiter should has index 0 */
-	UPROPERTY(Category = "Weapon", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UParticleSystemComponent* BeamPSC;
 
 	// place where we can visualise some debug info
 	FORCEINLINE void DrawDebug(float DeltaSeconds);
@@ -107,6 +102,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<UDamageType>  DamageType;
 
+#if WITH_EDITORONLY_DATA
+	/** enable/disable weapon draw debug, EDITOR ONLY */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	bool bDrawDebugWeapon;
+#endif
+
 private:
 	// timer to handle fire logic
 	FTimerHandle TimerHandle_FireLoop;
@@ -153,9 +154,6 @@ private:
 
 	/** Frame-per-frame Tick energy calculation, decreased when firing, increased when not firining */
 	FORCEINLINE void OnTickCalculateEnergyLevel(float DeltaSeconds);
-
-	/** OnTick BeamPSC handle beam source and target */
-	FORCEINLINE void OnTickBeamPSCHandle();
 
 protected:
 	//=============================================================================

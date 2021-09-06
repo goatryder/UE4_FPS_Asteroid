@@ -68,6 +68,7 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1PComp;
 
+
 	/** character sk mesh hand socket where weapon will be attached */
 	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
 	FName WeaponSocketName;
@@ -88,6 +89,20 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly, meta = (EditCondition = "bEnableMeshRotationLag"))
 	FMeshRotationLag MeshLagParams;
 
+	// look point trace channel
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPSCharacter", meta = (AllowPrivateAccess = "true"))
+		TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
+
+	// cache last view point trace result
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		mutable FHitResult LookTrace;
+
+#if WITH_EDITORONLY_DATA
+		/** enable/disable character draw debug, EDITOR ONLY */
+		UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+		bool bDrawDebugCharacter;
+#endif
+
 	/** character current weapon */
 	UPROPERTY()
 	AAFPS_Weapon* WeaponInHands;
@@ -97,14 +112,6 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 
 	// default look point trace params
 	FCollisionQueryParams LookTraceQueryParams;
-
-	// look point trace channel
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPSCharacter", meta = (AllowPrivateAccess = "true"))
-	TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
-
-	// cache last view point trace result
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	mutable FHitResult LookTrace;
 
 public:
 	// Sets default values for this character's properties
