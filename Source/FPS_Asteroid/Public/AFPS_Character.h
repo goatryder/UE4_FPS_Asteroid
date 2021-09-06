@@ -61,7 +61,7 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	GENERATED_BODY()
 
 	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Category = Camera, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
 
 	/** First person skeletal mesh */
@@ -99,7 +99,7 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	FCollisionQueryParams LookTraceQueryParams;
 
 	// look point trace channel
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPSCharacter", meta = (AllowPrivateAccess = "true"))
 	TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
 
 	// cache last view point trace result

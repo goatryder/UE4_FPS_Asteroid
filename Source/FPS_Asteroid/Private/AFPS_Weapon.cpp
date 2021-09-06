@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 #include "AFPS_Character.h"
 
@@ -15,6 +16,9 @@ AAFPS_Weapon::AAFPS_Weapon()
 {
 	// tick enable
 	PrimaryActorTick.bCanEverTick = true;
+
+	// weapon attached to player mesh which attached to camera comp, need this to get proper weapon socket position in tick func
+	SetTickGroup(ETickingGroup::TG_PostUpdateWork);  
 
 	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -218,25 +222,29 @@ FORCEINLINE void AAFPS_Weapon::OnTickBeamPSCHandle()
 		
 		FVector TargetLoc;
 		{
-			float BeamLength = LastHit.bBlockingHit ? LastHit.Distance : Range;
-			FVector ShotMuzzleDirection;
+			//float BeamLength = LastHit.bBlockingHit ? LastHit.Distance : Range;
+			//FVector ShotMuzzleDirection;
+			//
+			//if (CharacterOwner)
+			//{
+			//	ShotMuzzleDirection = (CharacterOwner->GetCharacterViewPoint() - MuzzleLoc);
+			//}
+			//else
+			//{
+			//	ShotMuzzleDirection = (LastHit.TraceEnd - MuzzleLoc);
+			//}
+			//
+			//ShotMuzzleDirection.Normalize();
+			//TargetLoc = MuzzleLoc + ShotMuzzleDirection * BeamLength;
 
-			if (CharacterOwner)
-			{
-				ShotMuzzleDirection = (CharacterOwner->GetCharacterViewPoint() - MuzzleLoc);
-			}
-			else
-			{
-				ShotMuzzleDirection = (LastHit.TraceEnd - MuzzleLoc);
-			}
-
-			ShotMuzzleDirection.Normalize();
-			TargetLoc = MuzzleLoc + ShotMuzzleDirection * BeamLength;
+			TargetLoc = CharacterOwner ? CharacterOwner->GetCharacterViewPoint() : LastHit.TraceEnd;
 		}
+
 		BeamPSC->SetBeamTargetPoint(0, TargetLoc, 0);
 
 		// debug
-		// DrawDebugLine(GetWorld(), MuzzleLoc, TargetLoc, FColor::Yellow, false, 0.f, 0, 2.f);
+		DrawDebugLine(GetWorld(), MuzzleLoc, TargetLoc, FColor::Yellow, false, 0.f, 1, 1);
+		DrawDebugString(GetWorld(), TargetLoc, FString::SanitizeFloat((TargetLoc - MuzzleLoc).Size() * 0.01f) + " m", 0, FColor::Cyan, 0.f, true);
 	}
 }
 
@@ -284,8 +292,9 @@ void AAFPS_Weapon::PlayEnergyRestoredEffects()
 
 FORCEINLINE void AAFPS_Weapon::DrawDebug(float DeltaSeconds)
 {
-	// draw debug weapon parameters
 	FVector DrawLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
+
+	DrawDebugSphere(GetWorld(), DrawLocation, 3.f, 4, FColor::Yellow, false, -1.f, 1);
 
 	// dbg shooting time msg
 	FString ShootTimeMsg;
@@ -320,6 +329,6 @@ FORCEINLINE void AAFPS_Weapon::DrawDebug(float DeltaSeconds)
 	// draw debug last hit
 	if (LastHit.bBlockingHit)
 	{
-		DrawDebugSphere(GetWorld(), LastHit.Location, 10.f, 4, FColor::Yellow);
+		DrawDebugSphere(GetWorld(), LastHit.Location, 10.f, 4, FColor::Yellow, false, -1.f, 0, 1.f);
 	}
 }

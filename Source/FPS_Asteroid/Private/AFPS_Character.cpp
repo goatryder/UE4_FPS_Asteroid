@@ -12,8 +12,11 @@
 
 AAFPS_Character::AAFPS_Character()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// mesh comp attached to camera so logic in tick function should fire after camera change it position
+	SetTickGroup(ETickingGroup::TG_PostUpdateWork);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	CameraComp->SetupAttachment(GetCapsuleComponent());
@@ -169,6 +172,9 @@ FORCEINLINE void AAFPS_Character::DrawDebug()
 {
 	// debug camera lag
 	// if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
+
+	// draw look point
+	DrawDebugSphere(GetWorld(), GetCharacterViewPoint(), 10, 4, FColor::Red);
 }
 
 void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
@@ -179,9 +185,9 @@ void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)
 	}
 
 	WeaponInHands = GetWorld()->SpawnActor<AAFPS_Weapon>(DefaultWeaponClass, GetActorLocation(), GetActorRotation());
-	WeaponInHands->AttachToComponent(Mesh1PComp, FAttachmentTransformRules::KeepRelativeTransform, WeaponInHands->GetAttachSocketName());
-	WeaponInHands->SetActorRelativeTransform(FTransform::Identity);
+	WeaponInHands->AttachToComponent(Mesh1PComp, FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponInHands->GetAttachSocketName());
 	WeaponInHands->GetMesh()->SetCastShadow(false);
+	WeaponInHands->AddTickPrerequisiteActor(this);
 	WeaponInHands->OnAttach(this);
 
 	LookTraceQueryParams.AddIgnoredActor(WeaponInHands);
