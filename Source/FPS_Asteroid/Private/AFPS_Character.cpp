@@ -38,7 +38,7 @@ AAFPS_Character::AAFPS_Character()
 	Mesh1PComp->SetRelativeLocation(FVector(0, 0, -155.0f));
 
 	// mesh find
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/FirstPerson/Character/Mesh/SK_Mannequin_Arms.SK_Mannequin_Arms"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/FPSCharacter/Character/Mesh/SK_Mannequin_Arms.SK_Mannequin_Arms"));
 	if (MeshFinder.Succeeded())
 	{
 		Mesh1PComp->SetSkeletalMesh(MeshFinder.Object);
@@ -46,7 +46,7 @@ AAFPS_Character::AAFPS_Character()
 	}
 
 	// mesh find anim bp
-	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimFinder(TEXT("/Game/Blueprints/ABP_Player.ABP_Player"));
+	static ConstructorHelpers::FObjectFinder<UAnimBlueprint> AnimFinder(TEXT("/Game/FPSCharacter/ABP_Player.ABP_Player"));
 	if (MeshFinder.Succeeded())
 	{
 		Mesh1PComp->SetAnimInstanceClass(AnimFinder.Object->GeneratedClass);

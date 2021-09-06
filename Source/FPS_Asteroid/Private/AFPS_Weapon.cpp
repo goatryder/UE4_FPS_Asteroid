@@ -22,7 +22,7 @@ AAFPS_Weapon::AAFPS_Weapon()
 	RootComponent = MeshComp;
 
 	// find default mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/LaserGun/FPWeapon/Mesh/SK_FPGun.SK_FPGun"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshFinder(TEXT("/Game/FPSLaserGun/FPWeapon/Mesh/SK_FPGun.SK_FPGun"));
 	if (MeshFinder.Succeeded())
 	{
 		MeshComp->SetSkeletalMesh(MeshFinder.Object);
