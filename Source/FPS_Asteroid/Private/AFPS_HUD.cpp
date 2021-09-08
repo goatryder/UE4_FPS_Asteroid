@@ -5,10 +5,12 @@
 
 AAFPS_HUD::AAFPS_HUD()
 {
-	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTextureObjFinder(TEXT("/Game/FirstPerson/Textures/FirstPersonCrosshair"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTextureObjFinder(TEXT("/Game/FPSLaserGun/Textures/FirstPersonCrosshair"));
 	UTexture2D* CrosshairTexture = CrosshairTextureObjFinder.Object;
-
-	CrosshairIcon = UCanvas::MakeIcon(CrosshairTexture, 0.f, 0.f, CrosshairTexture->GetSizeX(), CrosshairTexture->GetSizeY());
+	if (CrosshairTexture)
+	{
+		CrosshairIcon = UCanvas::MakeIcon(CrosshairTexture, 0.f, 0.f, CrosshairTexture->GetSizeX(), CrosshairTexture->GetSizeY());
+	}
 }
 
 void AAFPS_HUD::DrawHUD()
