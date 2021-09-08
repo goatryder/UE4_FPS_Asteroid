@@ -102,11 +102,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<UDamageType>  DamageType;
 
-#if WITH_EDITORONLY_DATA
+	#if WITH_EDITORONLY_DATA
 	/** enable/disable weapon draw debug, EDITOR ONLY */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	bool bDrawDebugWeapon;
-#endif
+	#endif
 
 private:
 	// timer to handle fire logic

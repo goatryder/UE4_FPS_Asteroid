@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "AFPS_Asteroid.generated.h"
 
+
 UCLASS()
 class FPS_ASTEROID_API AAFPS_Asteroid : public AActor
 {
@@ -27,5 +28,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	//UFUNCTION()
+	//OnReceiveDamage()
 
 };

@@ -91,17 +91,17 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 
 	// look point trace channel
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPSCharacter", meta = (AllowPrivateAccess = "true"))
-		TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
+	TEnumAsByte<ECollisionChannel> LookLineTraceChannel;
 
 	// cache last view point trace result
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		mutable FHitResult LookTrace;
+	mutable FHitResult LookTrace;
 
-#if WITH_EDITORONLY_DATA
-		/** enable/disable character draw debug, EDITOR ONLY */
-		UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
-		bool bDrawDebugCharacter;
-#endif
+	#if WITH_EDITORONLY_DATA
+	/** enable/disable character draw debug, EDITOR ONLY */
+	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
+	bool bDrawDebugCharacter;
+	#endif
 
 	/** character current weapon */
 	UPROPERTY()
