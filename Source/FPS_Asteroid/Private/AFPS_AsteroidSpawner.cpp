@@ -8,6 +8,10 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#if WITH_EDITOR
+#include "DrawDebugHelpers.h"
+#endif // WITH_EDITOR
+
 AAFPS_AsteroidSpawner::AAFPS_AsteroidSpawner()
 {
 	#if WITH_EDITOR
@@ -17,7 +21,8 @@ AAFPS_AsteroidSpawner::AAFPS_AsteroidSpawner()
 
 	// defaults
 	SpawnParam.AsteroidClass = AAFPS_Asteroid::StaticClass();
-	SpawnParam.InitialSpawnRadius = 15'00.f;  // 15m
+	SpawnParam.AsteroidForwardVector = FVector::DownVector;  // to face asteroid ass to spawn anchor
+	SpawnParam.InitialSpawnRadius = 25'00.f;  // 25m
 	SpawnParam.MaxSpawnRadius = 1'000'00.f; // 1km
 	SpawnParam.NextWaveRadiusMult = 1.05f;
 	SpawnParam.InitialAsteroidSpawnNr = 15;
@@ -90,22 +95,56 @@ void AAFPS_AsteroidSpawner::StartWave()
 	// debug
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Red, "Start Next wave");
 
-	// todo
-
-
+	// spawn asteroids
+	for (int It = 0; It != AsteroidSpawnNum; ++It)
+	{
+		SpawnAsteroid();
+	}
 }
 
 FTransform AAFPS_AsteroidSpawner::CalcNextSpawnTransform()
 {
-	// todo
+	/*
+	 * Spherical coordinates https://en.wikipedia.org/wiki/Spherical_coordinate_system
+	 * 
+	 * SpherePitch(Inclination) = arccos(z / sqrt(x^2+y^2+z^2)) = arccos(z/r) = arctan(sqrt(x^2 + y^2) / z)
+	 * SphereYaw(Azimuth) = arctan(y/x)
+	 * 
+	 * x = r * cos(SphereYaw) * sin(SpherePitch)
+	 * y = r * sin(SphereYaw) * sin(SpherePitch)
+	 * z = r * cos(SpherePitch)
+	 */
 
-	return FTransform();
+	// calculate random spawn point from sphere center
+	const float SpherePitch =    FMath::FRandRange(-PI * 2.f, PI * 2.f);
+	const float SphereYaw =      FMath::FRandRange(-PI * 2.f, PI * 2.f);
+	const float CosSphereYaw =   cosf(SphereYaw);
+	const float SinSphereYaw =   sinf(SphereYaw);
+	const float CosSpherePitch = cosf(SpherePitch);
+	const float SinSpherePitch = sinf(SpherePitch);
+
+	const FVector SphericalOffset = FVector(
+		SpawnRadius * CosSphereYaw * SinSpherePitch,
+		SpawnRadius * SinSphereYaw * SinSpherePitch,
+		SpawnRadius * CosSpherePitch
+	);
+
+	const FVector SpawnPoint = SpawnOrigin + SphericalOffset;
+
+	// check if distance between nearest is bigger then threshold
+	// recalculate new point if so
+
+	// calculate rotation to face Origin
+	const FVector AsteroidDirection = SpawnParam.AsteroidForwardVector.GetSafeNormal();
+	
+
+	// calculate scale
+
+	return FTransform(FRotator(), SpawnPoint, FVector::OneVector);
 }
 
 void AAFPS_AsteroidSpawner::SpawnAsteroid()
 {
-	// todo
-
 	FTransform SpawnTransform = CalcNextSpawnTransform();
 	FActorSpawnParameters SpawnParams;
 	AAFPS_Asteroid* SpawnedAsteroid = GetWorld()->SpawnActor<AAFPS_Asteroid>(SpawnParam.AsteroidClass, SpawnTransform, SpawnParams);
@@ -161,6 +200,8 @@ void AAFPS_AsteroidSpawner::DrawDebug(float DeltaSeconds)
 		+ "\n SpawnedAsteroidsNum: " + FString::SanitizeFloat(SpawnedAsteroids.Num());
 
 	if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 0.f, FColor::Cyan, DbgMsg, true);
+
+	DrawDebugSphere(GetWorld(), SpawnOrigin, SpawnRadius, 36, FColor::Green);
 }
 
 void AAFPS_AsteroidSpawner::Tick(float DeltaSeconds)

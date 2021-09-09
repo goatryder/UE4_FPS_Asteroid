@@ -4,4 +4,4 @@
 
 #include "CoreMinimal.h"
 
-#define TRACE_DIST_MAX     1'000'00.f  // 5km, project soft line trace distance limitation
+#define TRACE_DIST_MAX     1'000'00.f  // 1km, project line trace distance soft limitation

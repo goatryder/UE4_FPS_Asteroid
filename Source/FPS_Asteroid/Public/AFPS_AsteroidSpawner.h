@@ -19,8 +19,13 @@ struct FAsteroidSpawnerParam
 {
 	GENERATED_BODY()
 
+	/** Asteroid to spawn class */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAFPS_Asteroid> AsteroidClass;
+
+	/** Spawned asteroid will be facing spawn anchor with this vector */
+	UPROPERTY(EditDefaultsOnly)
+	FVector AsteroidForwardVector;
 
 
 	/** Distance from SpawnOrigin to spawn asteroid on first wave */
