@@ -9,7 +9,7 @@
 class AAFPS_Asteroid;
 class AAFPS_AsteroidSpawner;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAsteroidKilled, AAFPS_Asteroid*, Asteroid, AActor*, Killer, AController*, KillerController);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActorKilledSignature, AActor*, Victim, AActor*, Killer, AController*, KillerController);
 
 /**
  * 
@@ -22,16 +22,41 @@ class FPS_ASTEROID_API AAFPS_GameMode : public AGameMode
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AFPS_GameMode", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AAFPS_AsteroidSpawner> AsteroidSpawnerClass;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	AAFPS_AsteroidSpawner* AsteroidSpawner;
+
+	/** Total Destroyed Asteroid Num */
+	UPROPERTY()
+	int32 KilledAsteroidNum;
+
+	/** Total Spawned Asteroid Num from AsteroidSpawner */
+	UPROPERTY()
+	int32 SpawnedAsteroidNum;
 
 public:
 	AAFPS_GameMode();
 
 	/** Transitions to calls BeginPlay on actors. */
 	virtual void StartPlay() override;
-	
-	/** When asteroid is killed it will broadcast this delegate */
+
+	/** On Asteroid Killed Delegate, usually called from AAFPS_HealthComponent */
 	UPROPERTY(BlueprintAssignable)
-	FOnAsteroidKilled NotifyAsteroidKilled;
+	FOnActorKilledSignature NotifyActorKilled;
+
+	/** Get Total Destroyed Asteroids by player Num */
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FORCEINLINE int32 GetKilledAsteroidNum() const { return KilledAsteroidNum; }
+
+	/** Get AsteroidSpawner */
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FORCEINLINE AAFPS_AsteroidSpawner* GetAsteroidSpawner() const { return AsteroidSpawner; }
+
+	/** On Asteroid Destroy -> incr KilledAsteroidNum */
+	UFUNCTION()
+	void OnActorKilled(AActor* Victim, AActor* Killer, AController* KillerController);
+
+	/** On Asteroid Spawned -> Incr SpawnedAsteroidNum */
+	UFUNCTION()
+	void OnAsteroidSpawned(AAFPS_Asteroid* Asteroid);
+
 };

@@ -82,6 +82,7 @@ class FPS_ASTEROID_API AAFPS_AsteroidSpawner : public AActor
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	FAsteroidSpawnerParam SpawnParam;
 
+
 	/** Current wave spawn stage */
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	int32 WaveCount;
@@ -105,6 +106,7 @@ class FPS_ASTEROID_API AAFPS_AsteroidSpawner : public AActor
 	/** Current wave asteroid scale, will change on each wave */
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	float AsteroidScale;
+
 
 	/** Store spawned asteroids to be able to calculate correct positions for next astroid spawn */
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
@@ -151,12 +153,25 @@ private:
 	FVector GetNewSpawnOrigin();
 
 
-	/** AFPS_GameMode FOnAsteroidKilled delegate callback */
-	UFUNCTION()
-	void OnAsteroidKilled(AAFPS_Asteroid* Asteroid, AActor* Killer, AController* KillerController);
 
 public:	
 	UPROPERTY(BlueprintAssignable)
 	FOnAsteroidSpawned NotifyAsteroidSpawned;
+
+	/** Check if killed actor is asteroid, if so -> handle asteroid killed */
+	UFUNCTION()
+	void OnActorKilled(AActor* Victim, AActor* Killer, AController* KillerController);
+
+	/** Get Wave Count */
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FORCEINLINE int32 GetWaveCount() const { return WaveCount; }
+
+	/** Get asteroids to kill for next wave */
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FORCEINLINE int32 GetAsteroidToKillForNextWave() const { return AsteroidToKillForNextWave; }
+
+	/** Get alive spawned asteroids */
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	FORCEINLINE TArray<AAFPS_Asteroid*>& GetAliveSpawnedAsteroids() { return SpawnedAsteroids; }
 
 };

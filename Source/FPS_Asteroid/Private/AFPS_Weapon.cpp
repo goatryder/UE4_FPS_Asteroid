@@ -46,6 +46,11 @@ AAFPS_Weapon::AAFPS_Weapon()
 
 	HitTraceQueryParams.AddIgnoredActor(this);
 	HitTraceQueryParams.bTraceComplex = true;
+}
+
+void AAFPS_Weapon::BeginPlay()
+{
+	Super::BeginPlay();
 
 	CurrentEnergyLevel = EnergyLevel;
 	EnergyLevelTarget = EnergyLevel;

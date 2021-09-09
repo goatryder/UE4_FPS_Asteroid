@@ -56,7 +56,7 @@ void AAFPS_AsteroidSpawner::PrepareFirstWave(AAFPS_GameMode* GM)
 	if (CanSpawnWave())
 	{
 		// subscribe to asteroid kill for checking next spawn wave
-		GM->NotifyAsteroidKilled.AddDynamic(this, &AAFPS_AsteroidSpawner::OnAsteroidKilled);
+		GM->NotifyActorKilled.AddDynamic(this, &AAFPS_AsteroidSpawner::OnActorKilled);
 
 		// first wave spawn parameters
 		WaveCount = 1;
@@ -173,17 +173,20 @@ FVector AAFPS_AsteroidSpawner::GetNewSpawnOrigin()
 	return NewSpawnOrigin;
 }
 
-void AAFPS_AsteroidSpawner::OnAsteroidKilled(AAFPS_Asteroid* Asteroid, AActor* Killer, AController* KillerController)
+void AAFPS_AsteroidSpawner::OnActorKilled(AActor* Victim, AActor* Killer, AController* KillerController)
 {
-	// remove if in SpawnedAsteroids container;
-	SpawnedAsteroids.RemoveSingle(Asteroid);
-	// if asteroid was destroyed and no OnAsteroidKilled is triggered, remove nullptrs
-	SpawnedAsteroids.Remove(nullptr);
-
-	if (--AsteroidToKillForNextWave <= 0)  // decrement asteroid to kill, check if we can start next wave
+	if (AAFPS_Asteroid* Asteroid = Cast<AAFPS_Asteroid>(Victim))
 	{
-		bAllowStartWave = true;
-		StartNextWave();  // run next wave
+		// remove if in SpawnedAsteroids container;
+		SpawnedAsteroids.RemoveSingle(Asteroid);
+		// if asteroid was destroyed and no OnAsteroidKilled is triggered, remove nullptrs
+		SpawnedAsteroids.Remove(nullptr);
+
+		if (--AsteroidToKillForNextWave <= 0)  // decrement asteroid to kill, check if we can start next wave
+		{
+			bAllowStartWave = true;
+			StartNextWave();  // run next wave
+		}
 	}
 }
 

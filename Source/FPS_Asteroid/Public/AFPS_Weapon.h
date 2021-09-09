@@ -59,6 +59,9 @@ public:
 	void OnAttach(AAFPS_Character* InCharacterOwner);
 
 protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 	/** spawn fx effects place */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName MuzzleSocketName;
@@ -204,26 +207,30 @@ protected:
 
 public:
 	/** get character who has this weapon attached to itself */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE AAFPS_Character* GetCharacterAttachedTo() const { return CharacterOwner; }
 
 	/** get weapon skeletal mesh */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return MeshComp; }
 
 	/** get weapon attach socket name */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE FName GetAttachSocketName() const { return AttachSocketName; }
 
 	/** get weapon muzzle socket name */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE FName GetMuzzleSocketName() const { return MuzzleSocketName; }
 
 	/** get weapon current energy level */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE float GetCurrentEnergyLevel() const { return CurrentEnergyLevel; }
 
+	/** get normalized current energy level from 0.0 to 1.0 where 1.0 when its equal to default EnergyLevel */
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
+	FORCEINLINE float GetEnergyLevelAlpha() const { return FMath::Clamp(CurrentEnergyLevel / EnergyLevel, 0.f, 1.f); }
+
 	/** get weapon last hit trace result */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(BlueprintPure, BlueprintCallable, Category = "Weapon")
 	FORCEINLINE FHitResult& GetLastShotHitTraceResult() const { return LastHit; }
 };

@@ -25,3 +25,13 @@ void AAFPS_GameMode::StartPlay()
 		if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, 2.f, FColor::Green, "GM Prep first wave");
 	}
 }
+
+void AAFPS_GameMode::OnActorKilled(AActor* Victim, AActor* Killer, AController* KillerController)
+{
+	++KilledAsteroidNum;
+}
+
+void AAFPS_GameMode::OnAsteroidSpawned(AAFPS_Asteroid* Asteroid)
+{
+	++SpawnedAsteroidNum;
+}

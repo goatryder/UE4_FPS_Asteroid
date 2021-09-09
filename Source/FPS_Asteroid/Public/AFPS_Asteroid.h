@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "AFPS_Asteroid.generated.h"
 
+class UAFPS_HealthComponent;
 
 UCLASS()
 class FPS_ASTEROID_API AAFPS_Asteroid : public AActor
@@ -14,22 +15,32 @@ class FPS_ASTEROID_API AAFPS_Asteroid : public AActor
 
 	UPROPERTY(Category = Components, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* MeshComp;
+	
+	/** Simple health component for handling damage */
+	UPROPERTY(Category = Components, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UAFPS_HealthComponent* HealthComp;
+
+	#if WITH_EDITORONLY_DATA
+	/** enable/disable Asteroid draw debug, EDITOR ONLY */
+	UPROPERTY(EditDefaultsOnly, Category = "Asteroid", meta = (AllowPrivateAccess = "true"))
+	bool bDrawDebugAsteroidSpawn;
+	#endif  // WITH_EDITORONLY_DATA
 
 public:	
 	// Sets default values for this actor's properties
 	AAFPS_Asteroid();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 	
-	// todo: on damage received
-
-public:	
-	// Called every frame
+	#if WITH_EDITOR
+	void DrawDebug(float DeltaSeconds);
 	virtual void Tick(float DeltaTime) override;
+	#endif
 
-	//UFUNCTION()
-	//OnReceiveDamage()
+	/** On Health component changing health callback */
+	UFUNCTION()
+	void OnHealthChanged(UAFPS_HealthComponent* InHealthComp, float Health, float HealthDelta, 
+		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	/** This is blueprint event to handle asteroid death fx and destory after */
+	UFUNCTION(BlueprintNativeEvent)
+	void OnAsteroidDeath();
 };
