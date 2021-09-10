@@ -3,10 +3,10 @@
 
 #include "AFPS_HUD.h"
 
-#include <FPS_Asteroid/Public/AFPS_Character.h>
-#include <FPS_Asteroid/Public/AFPS_Weapon.h>
-#include <FPS_Asteroid/Public/AFPS_GameMode.h>
-#include <FPS_Asteroid/Public/AFPS_AsteroidSpawner.h>
+#include <Character/AFPS_Character.h>
+#include <Character/AFPS_Weapon.h>
+#include <AFPS_GameMode.h>
+#include <AFPS_AsteroidSpawner.h>
 
 AAFPS_HUD::AAFPS_HUD()
 {

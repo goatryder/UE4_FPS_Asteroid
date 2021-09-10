@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AFPS_Character.h"
+#include "Character/AFPS_Character.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Gameframework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 
-#include "AFPS_Weapon.h"
+#include "Character/AFPS_Weapon.h"
 
 
 AAFPS_Character::AAFPS_Character()

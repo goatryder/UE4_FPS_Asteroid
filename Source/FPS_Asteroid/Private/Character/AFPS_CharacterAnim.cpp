@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AFPS_CharacterAnim.h"
+#include "Character/AFPS_CharacterAnim.h"
 
-#include "AFPS_Character.h"
+#include "Character/AFPS_Character.h"
 
 UAFPS_CharacterAnim::UAFPS_CharacterAnim()
 {

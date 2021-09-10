@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AFPS_Weapon.h"
+#include "Character/AFPS_Weapon.h"
 #include "Engine/CollisionProfile.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "AFPS_Character.h"
+#include "Character/AFPS_Character.h"
 
 
 AAFPS_Weapon::AAFPS_Weapon()
