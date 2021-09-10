@@ -4,7 +4,7 @@
 #include "AFPS_Asteroid.h"
 
 #include <FPS_Asteroid/Public/Components/AFPS_HealthComponent.h>
-#include "C:/Program Files/Epic Games/UE_4.26/Engine/Plugins/Runtime/Analytics/Adjust/Source/AndroidAdjust/Private/AndroidAdjustProvider.h"
+#include "Engine/CollisionProfile.h"
 
 // Sets default values
 AAFPS_Asteroid::AAFPS_Asteroid()
@@ -15,6 +15,7 @@ AAFPS_Asteroid::AAFPS_Asteroid()
 
 	// create mesh
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	MeshComp->SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName);
 	RootComponent = MeshComp;
 
 	// health component
@@ -45,7 +46,7 @@ void AAFPS_Asteroid::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// debug
-	if (bDrawDebugAsteroidSpawn)
+	if (bDrawDebugAsteroid)
 	{
 		DrawDebug(DeltaTime);
 	}

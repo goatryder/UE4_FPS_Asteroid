@@ -19,6 +19,8 @@ AAFPS_HUD::AAFPS_HUD()
 
 void AAFPS_HUD::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (CrosshairTexture)
 	{
 		CrosshairIcon = UCanvas::MakeIcon(CrosshairTexture, 0.f, 0.f, CrosshairTexture->GetSizeX(), CrosshairTexture->GetSizeY());

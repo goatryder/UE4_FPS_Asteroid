@@ -23,7 +23,7 @@ class FPS_ASTEROID_API AAFPS_Asteroid : public AActor
 	#if WITH_EDITORONLY_DATA
 	/** enable/disable Asteroid draw debug, EDITOR ONLY */
 	UPROPERTY(EditDefaultsOnly, Category = "Asteroid", meta = (AllowPrivateAccess = "true"))
-	bool bDrawDebugAsteroidSpawn;
+	bool bDrawDebugAsteroid;
 	#endif  // WITH_EDITORONLY_DATA
 
 public:	
