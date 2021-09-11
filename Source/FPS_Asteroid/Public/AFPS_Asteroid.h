@@ -29,11 +29,6 @@ class FPS_ASTEROID_API AAFPS_Asteroid : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AAFPS_Asteroid();
-	
-	#if WITH_EDITOR
-	void DrawDebug(float DeltaSeconds);
-	virtual void Tick(float DeltaTime) override;
-	#endif
 
 	/** On Health component changing health callback */
 	UFUNCTION()

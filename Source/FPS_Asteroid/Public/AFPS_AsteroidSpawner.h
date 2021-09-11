@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "AFPS_AsteroidSpawner.generated.h"
 
+extern TAutoConsoleVariable<bool> CVarDrawDebugAsteroidSpawner;
+
 class AAFPS_Asteroid;
 class AAFPS_GameMode;
 
@@ -23,10 +25,6 @@ struct FAsteroidSpawnerParam
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAFPS_Asteroid> AsteroidClass;
 
-	/** Spawned asteroid will be facing spawn anchor with this vector */
-	UPROPERTY(EditDefaultsOnly)
-	FVector AsteroidForwardVector;
-
 
 	/** Distance from SpawnOrigin to spawn asteroid on first wave */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -39,7 +37,6 @@ struct FAsteroidSpawnerParam
 	/** Multiply SpawnRadius on next wave */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float NextWaveRadiusMult;
-
 
 	/** Asteroid number to spawn on first wave */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -54,24 +51,28 @@ struct FAsteroidSpawnerParam
 	float NextWaveAsteroidSpawnNrMult;
 
 
-	/** Multiply Spawner Asteroid scale on next wave */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float NextWaveAsteroidScaleMult;
-
-	/** Stop scaling asteroids when scale is exceeds this limit */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float AsteroidScaleLimit;
-
-
 	/** Allow asteroid spawn if distance from other asteroid is >= this value */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MinSpawnDistanceBetweenAsteroids;
 
+	/** Max attempts to adsjust sphere spawn position 
+	 * to make sure it's at least at MinSpawnDistanceBetweenAsteroids from other spawned asteroids
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 SpawnPositionAdsjustAttemptsMax;
 
 	/** Asteroid amount to destroy for triggering next spawn wave */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 AsteroidKillNrToTriggerNextWave;
 
+
+	/** Modify spawned asteroid scale, if asteroid count is ten, next scale will be 1.0 + AsteroidScaleStep * 10 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float AsteroidScaleStep;
+	
+	/** Limit asteroid scale, will be min(step+scale, abs_limit) if step is positive and max(step+scale, abs_limit) is negative */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float AsteroidScaleLimit;
 };
 
 UCLASS()
@@ -103,20 +104,13 @@ class FPS_ASTEROID_API AAFPS_AsteroidSpawner : public AActor
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	int32 AsteroidSpawnNum;
 
-	/** Current wave asteroid scale, will change on each wave */
+	/** Next spawned asteroid scale */
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	float AsteroidScale;
-
 
 	/** Store spawned asteroids to be able to calculate correct positions for next astroid spawn */
 	UPROPERTY(BlueprintReadOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
 	TArray<AAFPS_Asteroid*> SpawnedAsteroids;
-
-	#if WITH_EDITORONLY_DATA
-	/** enable/disable AsteroidSpawner draw debug, EDITOR ONLY */
-	UPROPERTY(EditDefaultsOnly, Category = "AsteroidSpawner", meta = (AllowPrivateAccess = "true"))
-	bool bDrawDebugAsteroidSpawn;
-	#endif  // WITH_EDITORONLY_DATA
 
 public:	
 	// Sets default values for this actor's properties
@@ -143,16 +137,22 @@ private:
 	/** Asteroids wave spawning */
 	void StartWave();
 
-	// Calculate spawn transform depending on current wave params for single Asteroid instance
-	virtual FTransform CalcNextSpawnTransform();
+	/** Calculate next random asteroid spawn point offset from sphere with anchor=SpawnOrigin, radius=SpawnRadius*/
+	FORCEINLINE FVector CalcAsteroidSpawnPointOffset();
 
-	/** Spawn single Asteroid instance with calculated transform */
+	/** Check if next spawn point is farther atleast then SpawnParam.MinSpawnDistanceBetweenAsteroids */
+	FORCEINLINE bool IsAsteroidSpawnPointValid(const FVector& InSpawnPoint);
+
+	// Calculate spawn transform depending on current wave params for single Asteroid instance
+	virtual FTransform CalcAsteroidSpawnTransform();
+
+	/*
+	 * Spawn single Asteroid instance with calculated transform 
+	 */
 	void SpawnAsteroid();
 
 	/** get location of zero index player controller's pawn of current world */
 	FVector GetNewSpawnOrigin();
-
-
 
 public:	
 	UPROPERTY(BlueprintAssignable)

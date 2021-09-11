@@ -9,6 +9,13 @@
 
 #include "Character/AFPS_Weapon.h"
 
+TAutoConsoleVariable<bool> CVarDrawDebugCharacter(
+	TEXT("AFPS.DrawDebug.Character"),
+	true,
+	TEXT("Enable/Disable Character DrawDebug"),
+	ECVF_Cheat
+);
+
 
 AAFPS_Character::AAFPS_Character()
 {
@@ -85,7 +92,8 @@ void AAFPS_Character::Tick(float DeltaTime)
 	LookPointTrace();
 
 	#if WITH_EDITOR
-	if (bDrawDebugCharacter)
+	if (CVarDrawDebugCharacter.GetValueOnGameThread() &&
+		CVarDrawDebugGlobal.GetValueOnGameThread())
 	{
 		DrawDebug();
 	}
@@ -176,8 +184,14 @@ FORCEINLINE void AAFPS_Character::DrawDebug()
 	// debug camera lag
 	// if (GEngine) GEngine->AddOnScreenDebugMessage(INDEX_NONE, -1.f, FColor::Cyan, "MeshRelRotation: " + Mesh1PComp->GetRelativeRotation().ToString());
 
+	FVector LookPoint = GetCharacterViewPoint();
+
 	// draw look point
-	DrawDebugSphere(GetWorld(), GetCharacterViewPoint(), 10, 4, FColor::Red);
+	DrawDebugSphere(GetWorld(), LookPoint, 10, 4, FColor::Red);
+
+	// look point dist
+	int32 LookDistance = FMath::RoundHalfToEven((LookPoint - CameraComp->GetComponentLocation()).Size() * 0.01);
+	DrawDebugString(GetWorld(), LookPoint, FString::SanitizeFloat(LookDistance) + " m", 0, FColor::Yellow, 0.f, true);
 }
 
 void AAFPS_Character::SpawnWeaponAttached(bool bDestroyOldWeapon)

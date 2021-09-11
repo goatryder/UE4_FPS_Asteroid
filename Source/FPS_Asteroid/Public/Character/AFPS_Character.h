@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../FPS_Asteroid.h"
+#include <FPS_Asteroid/FPS_Asteroid.h>
 #include "AFPS_Character.generated.h"
+
+extern TAutoConsoleVariable<bool> CVarDrawDebugCharacter;
 
 class UCameraComponent;
 class UAnimMontage;
@@ -96,12 +98,6 @@ class FPS_ASTEROID_API AAFPS_Character : public ACharacter
 	// cache last view point trace result
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	mutable FHitResult LookTrace;
-
-	#if WITH_EDITORONLY_DATA
-	/** enable/disable character draw debug, EDITOR ONLY */
-	UPROPERTY(Category = "FPSCharacter", EditDefaultsOnly)
-	bool bDrawDebugCharacter;
-	#endif
 
 	/** character current weapon */
 	UPROPERTY()

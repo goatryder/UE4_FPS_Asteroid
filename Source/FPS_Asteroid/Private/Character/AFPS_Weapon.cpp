@@ -8,6 +8,14 @@
 
 #include "Character/AFPS_Character.h"
 
+#include <FPS_Asteroid/FPS_Asteroid.h>
+
+TAutoConsoleVariable<bool> CVarDrawDebugWeapon(
+	TEXT("AFPS.DrawDebug.Weapon"),
+	true,
+	TEXT("Enable/Disable Weapon DrawDebug"),
+	ECVF_Cheat
+);
 
 AAFPS_Weapon::AAFPS_Weapon()
 {
@@ -63,7 +71,8 @@ void AAFPS_Weapon::Tick(float DeltaTime)
 	OnTickCalculateEnergyLevel(DeltaTime);
 
 	#if WITH_EDITOR
-	if (bDrawDebugWeapon)
+	if (CVarDrawDebugWeapon.GetValueOnGameThread() &&
+		CVarDrawDebugGlobal.GetValueOnGameThread())
 	{
 		DrawDebug(DeltaTime);
 	}
@@ -247,6 +256,7 @@ FORCEINLINE void AAFPS_Weapon::DrawDebug(float DeltaSeconds)
 {
 	FVector DrawLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
 
+	// muzzle socket
 	DrawDebugSphere(GetWorld(), DrawLocation, 3.f, 4, FColor::Yellow, false, -1.f, 1);
 
 	// dbg shooting time msg

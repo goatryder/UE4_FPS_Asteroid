@@ -9,10 +9,6 @@
 // Sets default values
 AAFPS_Asteroid::AAFPS_Asteroid()
 {
-	#if WITH_EDITOR
-	PrimaryActorTick.bCanEverTick = true;
-	#endif
-
 	// create mesh
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	MeshComp->SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName);
@@ -29,7 +25,7 @@ AAFPS_Asteroid::AAFPS_Asteroid()
 		MeshComp->SetStaticMesh(MeshFinder.Object);
 	}
 
-	// enable physics, allow rotation, disable gravity
+	// enable physics, allow rotation only, disable gravity
 	if (auto BI = MeshComp->GetBodyInstance())
 	{
 		BI->SetInstanceSimulatePhysics(true);
@@ -39,25 +35,6 @@ AAFPS_Asteroid::AAFPS_Asteroid()
 		BI->bLockZTranslation = true;
 	}
 }
-
-#if WITH_EDITOR
-void AAFPS_Asteroid::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	// debug
-	if (bDrawDebugAsteroid)
-	{
-		DrawDebug(DeltaTime);
-	}
-}
-
-void AAFPS_Asteroid::DrawDebug(float DeltaSeconds)
-{
-
-}
-#endif // WITH_EDITOR
-
 
 void AAFPS_Asteroid::OnHealthChanged(UAFPS_HealthComponent* InHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
