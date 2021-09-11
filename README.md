@@ -1,5 +1,5 @@
 # About project
-This is test challenge project. It use CPP and BP (for cosmetic effects mostly)
+This is test challenge project. It's writed on both CPP and BP (for cosmetic effects mostly)
 
 It has Asteroid Spawner to spawn asteroid in random sphere coordinates with some parameters to configure spawn.
 
