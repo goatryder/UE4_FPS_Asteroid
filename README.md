@@ -5,3 +5,6 @@ Also it has default UE weapon but with thicc laser shooting effects
 Character has simple flying mechanincs and Custom FPS camera Mesh rotation Lag
 Asteroids will rotate on weapon damage impulse and spawn radial force on explosion
 Have a nice day everyone :)
+
+# 30 Sec video
+https://youtu.be/XSFYIIuvwso
